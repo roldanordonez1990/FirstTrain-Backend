@@ -62,6 +62,7 @@ public class UsuarioController {
 
 		Usuario u = this.usuRep.findById(idUsuAutenticado).get();
 		dto.put("id_usuario", u.getIdUsuario());
+		dto.put("rol", u.getRol());
 		dto.put("nombre", u.getNombre());
 		dto.put("apellidos", u.getApellidos());
 		return dto;

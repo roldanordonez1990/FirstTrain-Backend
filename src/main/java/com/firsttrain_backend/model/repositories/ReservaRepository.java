@@ -16,5 +16,10 @@ public interface ReservaRepository extends CrudRepository<Reserva, Integer>{
 	
 	@Query(value="SELECT SUM(plazas) FROM reserva WHERE id_hora = ?", nativeQuery = true)
 	public long getSumaPlazas(int id_hora);
+	
+	
+	@Query(value="SELECT * FROM reserva WHERE id_hora = ? and id_usu = ?", nativeQuery = true)
+	public Reserva getComprobarReserva(int id_hora, int id_usu);
+	
 
 }

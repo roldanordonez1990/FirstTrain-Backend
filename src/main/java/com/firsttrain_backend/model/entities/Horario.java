@@ -2,9 +2,6 @@ package com.firsttrain_backend.model.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 
 
@@ -29,12 +26,10 @@ public class Horario implements Serializable {
 	//bi-directional many-to-one association to Actividad
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ref_actividades")
-	@JsonIgnore
 	private Actividad actividad;
 
 	//bi-directional many-to-one association to Reserva
 	@OneToMany(mappedBy="horario")
-	@JsonIgnore
 	private List<Reserva> reservas;
 
 	public Horario() {
