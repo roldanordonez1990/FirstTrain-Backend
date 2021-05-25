@@ -2,6 +2,7 @@ package com.firsttrain_backend.controller;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -227,6 +228,26 @@ public class ReservaController {
 			if (re != null) {
 				dto.put("existe", re.getActivo());
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	
+	@GetMapping("reserva/misReservas")
+	public DTO misReservas(int id_usu, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			Reserva re = reservaRep.getComprobarReserva(id_usu, idUsuAutenticado);
+			List<DTO> misReservas = (List<DTO>) this.reservaRep.getMisReservas(idUsuAutenticado);
+			//List<DTO> misReservasDTO = new ArrayList<DTO>();
+
+			dto.put("misReservas", misReservas);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

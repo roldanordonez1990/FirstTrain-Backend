@@ -2,6 +2,9 @@ package com.firsttrain_backend.model.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 
 
@@ -29,11 +32,13 @@ public class Reserva implements Serializable {
 	//bi-directional many-to-one association to Horario
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="id_hora")
+	@JsonIgnore
 	private Horario horario;
 
 	//bi-directional many-to-one association to Usuario
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="id_usu")
+	@JsonIgnore
 	private Usuario usuario;
 
 	public Reserva() {

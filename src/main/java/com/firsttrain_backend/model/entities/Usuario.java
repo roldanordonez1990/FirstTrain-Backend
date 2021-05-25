@@ -2,6 +2,9 @@ package com.firsttrain_backend.model.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 
 
@@ -45,15 +48,18 @@ public class Usuario implements Serializable {
 
 	//bi-directional many-to-one association to Foro
 	@OneToMany(mappedBy="usuario")
+	@JsonIgnore
 	private List<Foro> foros;
 
 	//bi-directional many-to-one association to Reserva
 	@OneToMany(mappedBy="usuario")
+	@JsonIgnore
 	private List<Reserva> reservas;
 
 	//bi-directional many-to-one association to NivelEntrenamiento
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="nivel")
+	@JsonIgnore
 	private NivelEntrenamiento nivelEntrenamiento;
 
 	public Usuario() {
