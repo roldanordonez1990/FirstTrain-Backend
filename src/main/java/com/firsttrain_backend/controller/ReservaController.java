@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,7 @@ import com.firsttrain_backend.model.entities.Usuario;
 import com.firsttrain_backend.model.repositories.HorarioRepository;
 import com.firsttrain_backend.model.repositories.ReservaRepository;
 import com.firsttrain_backend.model.repositories.UsuarioRepository;
+
 
 @CrossOrigin
 @RestController
@@ -235,18 +237,63 @@ public class ReservaController {
 	}
 	
 	@GetMapping("reserva/misReservas")
-	public DTO misReservas(int id_usu, HttpServletRequest request) {
+	public DTO misReservas(HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
 
 		try {
 			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
 			// Obtengo el usuario autenticado, por su JWT
-			Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
-			Reserva re = reservaRep.getComprobarReserva(id_usu, idUsuAutenticado);
+			//Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			//Reserva re = reservaRep.getComprobarReserva(id_usu, idUsuAutenticado);
 			List<DTO> misReservas = (List<DTO>) this.reservaRep.getMisReservas(idUsuAutenticado);
 			//List<DTO> misReservasDTO = new ArrayList<DTO>();
 
 			dto.put("misReservas", misReservas);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	
+	/**
+	 * 
+	 * @param datosNuevo
+	 * @param request
+	 * @return
+	 */
+	
+	@GetMapping("/reserva/updateHora")
+	public DTO updateHoraReserva(int id_hora, int id_reservas ,HttpServletRequest request) {
+		
+		DTO dto = new DTO();
+		
+		dto.put("result", "fail");
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			//Usuario u = this.usuRep.findById(idUsuAutenticado).get();
+			Reserva r = this.reservaRep.findById(id_reservas).get();
+			r.setHorario(this.horaRep.findById(id_hora).get());
+			r.setFecha(new Date());
+			this.reservaRep.save(r);
+			dto.put("result", "ok");
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return dto;
+		
+	}
+
+	@DeleteMapping("reserva/delete")
+	public DTO deleteReserva(int id_reservas, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			this.reservaRep.deleteById(id_reservas);
+
+			dto.put("result", "ok");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

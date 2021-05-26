@@ -22,7 +22,7 @@ public interface ReservaRepository extends CrudRepository<Reserva, Integer>{
 	@Query(value="SELECT * FROM reserva WHERE id_hora = ? and id_usu = ?", nativeQuery = true)
 	public Reserva getComprobarReserva(int id_hora, int id_usu);
 	
-	@Query(value="SELECT nombre, apellidos, fecha, horas FROM usuario as u, reserva as re, horario as ho "
+	@Query(value="SELECT nombre, apellidos, fecha, horas, id_reservas FROM usuario as u, reserva as re, horario as ho "
 			+ "WHERE re.id_hora = ho.id_horario and re.id_usu = u.id_usuario and re.id_usu = ?", nativeQuery = true)
 	public List<DTO> getMisReservas(int id_usu);
 	
