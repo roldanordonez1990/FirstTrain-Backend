@@ -52,6 +52,36 @@ public class HorarioController {
 	
 	/**
 	 * 
+	 */
+	
+	@GetMapping("todasLasHorasDisponibles/all")
+	public DTO getHorasDelHorarioDisponibles(HttpServletRequest request) {
+
+		DTO dto = new DTO();
+		dto.put("result", "fail");
+		try {
+			// Obtengo el id del usuario a través del token del request del cliente
+			//int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Listado de cometidos (entidad) gracias al método del repositorio
+			List<Horario> horas = (List<Horario>) this.horaRep.getHorasDelHorarioDisponibles();
+			// Listado de DTO de cometidos que se va a enviar al cliente
+			List<DTO> horasDTO = new ArrayList<DTO>();
+			// Recorremos la lista de entidad cometidos y se la añadimos a la lista DTO
+			// cometidos
+			for (Horario e : horas) {
+				horasDTO.add(getHoras(e));
+			}
+			dto.put("horasDisponibles", horasDTO);
+			dto.put("result", "ok");
+		} catch (Exception e) {
+
+		}
+
+		return dto;
+	}
+	
+	/**
+	 * 
 	 * @param c
 	 * @return
 	 */
