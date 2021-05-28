@@ -258,6 +258,28 @@ public class ReservaController {
 	
 	/**
 	 * 
+	 */
+	@GetMapping("reserva/grupos")
+	public DTO getGrupos(int id_hora, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			//Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			//Reserva re = reservaRep.getComprobarReserva(id_usu, idUsuAutenticado);
+			List<DTO> grupos = (List<DTO>) this.reservaRep.getGrupos(id_hora);
+			//List<DTO> misReservasDTO = new ArrayList<DTO>();
+
+			dto.put("grupos", grupos);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	/**
+	 * 
 	 * @param datosNuevo
 	 * @param request
 	 * @return

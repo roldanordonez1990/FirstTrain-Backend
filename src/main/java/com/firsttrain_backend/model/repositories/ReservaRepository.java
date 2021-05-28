@@ -26,5 +26,9 @@ public interface ReservaRepository extends CrudRepository<Reserva, Integer>{
 			+ "WHERE re.id_hora = ho.id_horario and re.id_usu = u.id_usuario and re.id_usu = ?", nativeQuery = true)
 	public List<DTO> getMisReservas(int id_usu);
 	
+	@Query(value="SELECT nombre, apellidos, horas FROM usuario as u, reserva as re, horario as ho "
+			+ "WHERE re.id_hora = ho.id_horario and re.id_usu = u.id_usuario and re.id_hora = ?", nativeQuery = true)
+	public List<DTO> getGrupos(int id_hora);
+	
 
 }
