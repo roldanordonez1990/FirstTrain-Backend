@@ -36,51 +36,6 @@ public class ReservaController {
 	@Autowired
 	UsuarioRepository usuRep;
 
-	@GetMapping("pruebaInnerJoin/all")
-	public DTO pruebaInnerJoin(HttpServletRequest request) {
-
-		DTO dto = new DTO();
-		dto.put("result", "fail");
-		try {
-			// Obtengo el id del usuario a través del token del request del cliente
-			// int idUsuAutenticado =
-			// AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
-			// Listado de cometidos (entidad) gracias al método del repositorio
-			// List<Horario> horas = (List<Horario>) this.horaRep.findAll();
-
-			List<Reserva> reservas = (List<Reserva>) this.reservaRep.findAll();
-
-			int plazas = 0;
-
-			// Listado de DTO de cometidos que se va a enviar al cliente
-			// List<DTO> horasDTO = new ArrayList<DTO>();
-
-			List<DTO> reservasDTO = new ArrayList<DTO>();
-			List<DTO> plazasDTO = new ArrayList<DTO>();
-			// Recorremos la lista de entidad cometidos y se la añadimos a la lista DTO
-			// cometidos
-
-			for (Reserva e : reservas) {
-				reservasDTO.add(getDatosReserva(e));
-
-			}
-
-			// dto.put("horas", horasDTO);
-			dto.put("reservas", reservasDTO);
-			// dto.put("plazas", plazas);
-			dto.put("result", "ok");
-		} catch (Exception e) {
-
-		}
-
-		return dto;
-	}
-
-	/**
-	 * 
-	 * @param request
-	 * @return
-	 */
 
 	@GetMapping("todasLasHorasYDatosReserva/all")
 	public DTO todosLasHoras(HttpServletRequest request) {
@@ -236,6 +191,12 @@ public class ReservaController {
 		return dto;
 	}
 	
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	
 	@GetMapping("reserva/misReservas")
 	public DTO misReservas(HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
@@ -249,6 +210,32 @@ public class ReservaController {
 			//List<DTO> misReservasDTO = new ArrayList<DTO>();
 
 			dto.put("misReservas", misReservas);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	
+	@GetMapping("reserva/todasLasReservasMezcla")
+	public DTO todasLasReservas(HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			//Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			//Reserva re = reservaRep.getComprobarReserva(id_usu, idUsuAutenticado);
+			List<DTO> todasLasReservas = (List<DTO>) this.reservaRep.getTodasLasReservasMezcla();
+			//List<DTO> misReservasDTO = new ArrayList<DTO>();
+
+			dto.put("todasLasReservas", todasLasReservas);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
