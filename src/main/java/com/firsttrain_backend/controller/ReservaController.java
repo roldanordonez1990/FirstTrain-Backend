@@ -191,6 +191,25 @@ public class ReservaController {
 		return dto;
 	}
 	
+	@GetMapping("reserva/comprobacionDesdeAdmin")
+	public DTO comprobacionDesdeAdmin(int id_hora, int id_usu, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			Reserva re = reservaRep.getComprobarReserva(id_hora, id_usu);
+			if (re != null) {
+				dto.put("existe", re.getActivo());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	
 	/**
 	 * 
 	 * @param request
