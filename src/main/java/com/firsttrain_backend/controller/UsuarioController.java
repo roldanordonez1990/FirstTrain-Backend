@@ -1,15 +1,21 @@
 package com.firsttrain_backend.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.firsttrain_backend.jwtSecurity.AutenticadorJWT;
+import com.firsttrain_backend.model.entities.Horario;
+import com.firsttrain_backend.model.entities.Reserva;
 import com.firsttrain_backend.model.entities.Usuario;
 import com.firsttrain_backend.model.repositories.NivelRepository;
 import com.firsttrain_backend.model.repositories.UsuarioRepository;
@@ -65,6 +71,63 @@ public class UsuarioController {
 		dto.put("rol", u.getRol());
 		dto.put("nombre", u.getNombre());
 		dto.put("apellidos", u.getApellidos());
+		dto.put("telefono", u.getTelefono());
+		dto.put("edad", u.getEdad());
+		dto.put("direccion", u.getDireccion());
+		dto.put("dni", u.getDni());
+		dto.put("info", u.getInfoAdicional());
+		//dto.put("nivel", u.getNivelEntrenamiento());
+		dto.put("password", u.getPassword());
+		dto.put("email", u.getEmail());
+		return dto;
+
+	}
+	
+	@GetMapping("usuario/todasLosDatosUsuarios")
+	public DTO usuarioTodosLosDatos(HttpServletRequest request) {
+
+		DTO dto = new DTO();
+		dto.put("result", "fail");
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+
+			List<DTO> usuarios = (List<DTO>) this.usuRep.getDatosTodosLosUsuarios();
+			
+			
+			dto.put("todasLosDatosUsuario", usuarios);
+			// dto.put("plazas", plazas);
+			dto.put("result", "ok");
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+
+		return dto;
+
+	}
+	
+	/**
+	 * 
+	 * @param c
+	 * @return
+	 */
+	private DTO getDatosUsu(Usuario u) {
+		DTO dto = new DTO();
+		dto.put("id_usuario", u.getIdUsuario());
+		dto.put("rol", u.getRol());
+		dto.put("nombre", u.getNombre());
+		dto.put("apellidos", u.getApellidos());
+		dto.put("telefono", u.getTelefono());
+		dto.put("edad", u.getEdad());
+		dto.put("direccion", u.getDireccion());
+		dto.put("dni", u.getDni());
+		dto.put("info", u.getInfoAdicional());
+		dto.put("nivel", u.getNivelEntrenamiento());
+		dto.put("password", u.getPassword());
+		dto.put("email", u.getEmail());
+
 		return dto;
 
 	}
@@ -122,6 +185,27 @@ public class UsuarioController {
 		}
 		return dto;
 		
+	}
+	
+	/**
+	 * 
+	 */
+	
+	@DeleteMapping("usuario/delete")
+	public DTO deleteUsuario(int id_usuario, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+
+		try {
+			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			this.usuRep.deleteById(id_usuario);
+
+			dto.put("result", "ok");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
 	}
 
 
