@@ -1,6 +1,7 @@
 package com.firsttrain_backend.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,24 +24,25 @@ import com.firsttrain_backend.model.repositories.UsuarioRepository;
 @CrossOrigin
 @RestController
 public class UsuarioController {
-	
+
 	@Autowired
 	UsuarioRepository usuRep;
 	@Autowired
 	NivelRepository nivelRep;
-	
-	//Buscar todos los usuarios 
+
+	// Buscar todos los usuarios
 	@GetMapping("usuario/all")
 	public Iterable<Usuario> encuentraUsuario() {
 
 		return this.usuRep.findAll();
 	}
-	
+
 	/**
 	 * 
 	 */
-	
-	//Método principal con el que obtengo un jwt del usuario logueado. Dentro del jwt obtenido va el id del usuario
+
+	// Método principal con el que obtengo un jwt del usuario logueado. Dentro del
+	// jwt obtenido va el id del usuario
 	@PostMapping("usuario/autenticadoJWT")
 	public DTO usuarioAutenticadoJWT(@RequestBody DatosUsuario datos) {
 
@@ -52,14 +54,14 @@ public class UsuarioController {
 		// Lo que devuelve es el jwt creado con un id del usuario en su interior
 		return dto;
 
-		}
-	
+	}
+
 	/**
 	 * 
 	 * @param request
 	 * @return
 	 */
-	
+
 	@GetMapping("usuario/getDatos")
 	public DTO usuarioAutenticado(HttpServletRequest request) {
 
@@ -76,13 +78,13 @@ public class UsuarioController {
 		dto.put("direccion", u.getDireccion());
 		dto.put("dni", u.getDni());
 		dto.put("info", u.getInfoAdicional());
-		//dto.put("nivel", u.getNivelEntrenamiento());
+		// dto.put("nivel", u.getNivelEntrenamiento());
 		dto.put("password", u.getPassword());
 		dto.put("email", u.getEmail());
 		return dto;
 
 	}
-	
+
 	@GetMapping("usuario/todasLosDatosUsuarios")
 	public DTO usuarioTodosLosDatos(HttpServletRequest request) {
 
@@ -93,21 +95,19 @@ public class UsuarioController {
 			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
 
 			List<DTO> usuarios = (List<DTO>) this.usuRep.getDatosTodosLosUsuarios();
-			
-			
+
 			dto.put("todasLosDatosUsuario", usuarios);
 			// dto.put("plazas", plazas);
 			dto.put("result", "ok");
-			
+
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
 
 		return dto;
 
 	}
-	
+
 	/**
 	 * 
 	 * @param c
@@ -131,41 +131,49 @@ public class UsuarioController {
 		return dto;
 
 	}
-	
+
 	/**
 	 * 
 	 */
-	
-	
+
 	@GetMapping("/usuario/autenticadoImagen")
-	public DTO getUsuarioAutenticado (boolean foto, HttpServletRequest request) {
+	public DTO getUsuarioAutenticado(int id_usu, HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
-		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario autenticado, por su JWT
+		// int idUsuAutenticado =
+		// AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo
+		// el usuario autenticado, por su JWT
 
 		// Intento localizar un usuario a partir de su id
-		Usuario usuAutenticado = usuRep.findById(idUsuAutenticado).get();
+		Usuario usuAutenticado = usuRep.findById(id_usu).get();
 		if (usuAutenticado != null) {
-			
+			dto.put("id_usuario", usuAutenticado.getIdUsuario());
 			dto.put("nombre", usuAutenticado.getNombre());
 			dto.put("apellidos", usuAutenticado.getApellidos());
 			dto.put("email", usuAutenticado.getEmail());
-			dto.put("foto", foto? usuAutenticado.getFoto() : "");
+			dto.put("password", usuAutenticado.getPassword());
+			dto.put("edad", usuAutenticado.getEdad());
+			dto.put("direccion", usuAutenticado.getDireccion());
+			dto.put("dni", usuAutenticado.getDni());
+			dto.put("info", usuAutenticado.getInfoAdicional());
+			dto.put("telefono", usuAutenticado.getTelefono());
+			dto.put("nivel", usuAutenticado.getNivelEntrenamiento().getIdNivelEntrenamiento());
+
 		}
 
-		// Finalmente devuelvo el JWT creado, puede estar vacío si la autenticación no ha funcionado
+		// Finalmente devuelvo el JWT creado, puede estar vacío si la autenticación no
+		// ha funcionado
 		return dto;
 	}
-	
-	
+
 	@PostMapping("/usuario/nuevoRegistro")
 	public DTO nuevoUsuarioRegistrado(@RequestBody DatosUsuarioNuevoRegistro datosNuevo) {
-		
+
 		DTO dto = new DTO();
-		
+
 		dto.put("result", "fail");
 		try {
 			Usuario u = new Usuario();
-			
+
 			u.setRol(2);
 			u.setNombre(datosNuevo.nombre);
 			u.setApellidos(datosNuevo.apellidos);
@@ -184,13 +192,43 @@ public class UsuarioController {
 			// TODO: handle exception
 		}
 		return dto;
-		
+
 	}
-	
+
+	@PostMapping("/usuario/updateUser")
+	public DTO updateHoraReserva(@RequestBody DatosUpdateUsu datos) {
+
+		DTO dto = new DTO();
+
+		dto.put("result", "fail");
+		try {
+			Usuario u = this.usuRep.findById(datos.id_usuario).get();
+
+			// u.setRol(2);
+			u.setNombre(datos.nombre);
+			u.setApellidos(datos.apellidos);
+			u.setTelefono(datos.telefono);
+			u.setEdad(datos.edad);
+			u.setDireccion(datos.direccion);
+			u.setDni(datos.dni);
+			u.setInfoAdicional(datos.info);
+			u.setNivelEntrenamiento(nivelRep.findById(datos.nivel).get());
+			// u.setPassword(datos.password);
+			u.setFoto(null);
+			u.setEmail(datos.email);
+			this.usuRep.save(u);
+			dto.put("result", "ok");
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return dto;
+
+	}
+
 	/**
 	 * 
 	 */
-	
+
 	@DeleteMapping("usuario/delete")
 	public DTO deleteUsuario(int id_usuario, HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
@@ -201,13 +239,62 @@ public class UsuarioController {
 			this.usuRep.deleteById(id_usuario);
 
 			dto.put("result", "ok");
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return dto;
 	}
+	
+	/**
+	 * 
+	 */
+	
+	@PostMapping("/usuario/ratificaPassword")
+	public DTO ratificaPassword (@RequestBody DTO dtoRecibido, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
 
+		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario autenticado, por su JWT
+
+		try {
+			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo todos los datos del usuario
+			String password = (String) dtoRecibido.get("password");  // Compruebo la contraseña
+			if (password.equals(usuarioAutenticado.getPassword())) {
+				dto.put("result", "ok"); // Devuelvo éxito, las contraseñas son iguales
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return dto;
+	}
+	
+	/**
+	 * 
+	 */
+	
+	@PostMapping("/usuario/modificaPassword")
+	public DTO modificaPassword (@RequestBody DTO dtoRecibido, HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
+
+		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario autenticado, por su JWT
+
+		try {
+			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo al usuario
+			String password = (String) dtoRecibido.get("password");  // Recibo la password que llega en el dtoRecibido
+			usuarioAutenticado.setPassword(password); // Modifico la password
+			usuRep.save(usuarioAutenticado);  // Guardo el usuario, con nueva password, en la unidad de persistencia
+			dto.put("result", "ok"); // Devuelvo éxito
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return dto;
+	}
 
 }
 
@@ -215,72 +302,106 @@ public class UsuarioController {
  * 
  */
 
+/**
+ * Clase interna que contiene los datos de autenticacion del usuario
+ */
+class DatosUsuario {
+	String dni;
+	String password;
+
+	/**
+	 * Constructor
+	 */
+	public DatosUsuario(String dni, String password) {
+		super();
+		this.dni = dni;
+		this.password = password;
+	}
+}
 
 /**
  * Clase interna que contiene los datos de autenticacion del usuario
  */
-	class DatosUsuario {
-		String dni;
-		String password;
-	
-		/**
-		 * Constructor
-		 */
-		public DatosUsuario(String dni, String password) {
-			super();
-			this.dni = dni;
-			this.password = password;
-		}
-	}
-	
-	/**
-	 * Clase interna que contiene los datos de autenticacion del usuario
-	 */
-		class DatosUsuarioNavigation {
-			String nombre;
-			String apellido;
-			
-			/**
-			 * Constructor
-			 */
-			public DatosUsuarioNavigation(String nombre, String apellido) {
-				super();
-				this.nombre = nombre;
-				this.apellido = apellido;
-			}
-		}
-		
-		/**
-		 * Clase interna que contiene los datos de autenticacion del usuario
-		 */
-		class DatosUsuarioNuevoRegistro {
-			String nombre;
-			String apellidos;
-			String dni;
-			String email;
-			String telefono;
-			String direccion;
-			String edad;
-			int nivel;
-			String password;
-			String info;
+class DatosUsuarioNavigation {
+	String nombre;
+	String apellido;
 
-			/**
-			 * Constructor
-			 */
-			public DatosUsuarioNuevoRegistro(String nombre, String apellidos, String dni, 
-					String email, String telefono, String direccion, String edad, 
-					int nivel, String password, String info) {
-				super();
-				this.nombre = nombre;
-				this.apellidos = apellidos;
-				this.dni = dni;
-				this.email = email;
-				this.telefono = telefono;
-				this.direccion = direccion;
-				this.edad = edad;
-				this.nivel = nivel;
-				this.password = password;
-				this.info = info;
-			}
-		}
+	/**
+	 * Constructor
+	 */
+	public DatosUsuarioNavigation(String nombre, String apellido) {
+		super();
+		this.nombre = nombre;
+		this.apellido = apellido;
+	}
+}
+
+/**
+ * Clase interna que contiene los datos de autenticacion del usuario
+ */
+class DatosUsuarioNuevoRegistro {
+	String nombre;
+	String apellidos;
+	String dni;
+	String email;
+	String telefono;
+	String direccion;
+	String edad;
+	int nivel;
+	String password;
+	String info;
+
+	/**
+	 * Constructor
+	 */
+	public DatosUsuarioNuevoRegistro(String nombre, String apellidos, String dni, String email, String telefono,
+			String direccion, String edad, int nivel, String password, String info) {
+		super();
+		this.nombre = nombre;
+		this.apellidos = apellidos;
+		this.dni = dni;
+		this.email = email;
+		this.telefono = telefono;
+		this.direccion = direccion;
+		this.edad = edad;
+		this.nivel = nivel;
+		this.password = password;
+		this.info = info;
+	}
+}
+
+/**
+ * Clase interna que contiene los datos de autenticacion del usuario
+ */
+class DatosUpdateUsu {
+	int id_usuario;
+	String nombre;
+	String apellidos;
+	String dni;
+	String email;
+	String telefono;
+	String direccion;
+	String edad;
+	int nivel;
+	String password;
+	String info;
+
+	/**
+	 * Constructor
+	 */
+	public DatosUpdateUsu(int id_usuario, String nombre, String apellidos, String dni, String email, String telefono,
+			String direccion, String edad, int nivel, String password, String info) {
+		super();
+		this.id_usuario = id_usuario;
+		this.nombre = nombre;
+		this.apellidos = apellidos;
+		this.dni = dni;
+		this.email = email;
+		this.telefono = telefono;
+		this.direccion = direccion;
+		this.edad = edad;
+		this.nivel = nivel;
+		this.password = password;
+		this.info = info;
+	}
+}

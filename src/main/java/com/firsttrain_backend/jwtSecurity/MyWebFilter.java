@@ -41,6 +41,7 @@ public class MyWebFilter implements Filter{
     			uriDePeticionWeb.equals("/todosLosNiveles/all") ||
     			uriDePeticionWeb.equals("/todasLasHoras/all") ||
     			uriDePeticionWeb.equals("/todasLasHorasYDatosReserva/all") ||
+    			uriDePeticionWeb.equals("/usuario/autenticadoImagen") ||
     			//uriDePeticionWeb.equals("/usuario/getDatos") ||
     			//uriDePeticionWeb.equals("/usuario/updateDatos") ||
     			uriDePeticionWeb.equals("/usuario/all") ||
