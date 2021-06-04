@@ -164,6 +164,40 @@ public class UsuarioController {
 		// ha funcionado
 		return dto;
 	}
+	
+	/**
+	 * 
+	 * @param datosNuevo
+	 * @return
+	 */
+	
+	@GetMapping("/usuario/autenticadoImagen2")
+	public DTO getUsuarioAutenticado2(HttpServletRequest request) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo
+		// el usuario autenticado, por su JWT
+
+		// Intento localizar un usuario a partir de su id
+		Usuario usuAutenticado = usuRep.findById(idUsuAutenticado).get();
+		if (usuAutenticado != null) {
+			dto.put("id_usuario", usuAutenticado.getIdUsuario());
+			dto.put("nombre", usuAutenticado.getNombre());
+			dto.put("apellidos", usuAutenticado.getApellidos());
+			dto.put("email", usuAutenticado.getEmail());
+			dto.put("password", usuAutenticado.getPassword());
+			dto.put("edad", usuAutenticado.getEdad());
+			dto.put("direccion", usuAutenticado.getDireccion());
+			dto.put("dni", usuAutenticado.getDni());
+			dto.put("info", usuAutenticado.getInfoAdicional());
+			dto.put("telefono", usuAutenticado.getTelefono());
+			dto.put("nivel", usuAutenticado.getNivelEntrenamiento().getIdNivelEntrenamiento());
+
+		}
+
+		// Finalmente devuelvo el JWT creado, puede estar vacío si la autenticación no
+		// ha funcionado
+		return dto;
+	}
 
 	@PostMapping("/usuario/nuevoRegistro")
 	public DTO nuevoUsuarioRegistrado(@RequestBody DatosUsuarioNuevoRegistro datosNuevo) {
