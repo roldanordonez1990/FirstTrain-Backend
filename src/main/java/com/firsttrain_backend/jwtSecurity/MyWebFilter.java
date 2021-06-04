@@ -39,6 +39,7 @@ public class MyWebFilter implements Filter{
     			uriDePeticionWeb.equals("/usuario/autenticadoJWT") || // Web de autenticado, aunque no traiga JWT en la cabecera se le permite pasar
     			uriDePeticionWeb.equals("/usuario/nuevoRegistro") ||
     			uriDePeticionWeb.equals("/todosLosNiveles/all") ||
+    			uriDePeticionWeb.equals("/usuario/comprobacion") ||
     			//uriDePeticionWeb.equals("/todasLasHoras/all") ||
     			//uriDePeticionWeb.equals("/todasLasHorasYDatosReserva/all") ||
     			//uriDePeticionWeb.equals("/usuario/autenticadoImagen") ||

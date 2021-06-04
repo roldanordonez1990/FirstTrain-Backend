@@ -228,6 +228,36 @@ public class UsuarioController {
 		return dto;
 
 	}
+	/**
+	 * 
+	 * @param datos
+	 * @return
+	 */
+	
+	@PostMapping("usuario/comprobacion")
+	public DTO comprobarReserva(@RequestBody DatosUsuarioNuevoRegistro datosNuevo) {
+		DTO dto = new DTO(); // Voy a devolver un dto
+		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
+
+		try {
+			//int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// Obtengo el usuario autenticado, por su JWT
+			List<Usuario> usuAutenticado = this.usuRep.getDniUser();
+			String dniNuevo = datosNuevo.dni;
+			for(Usuario u: usuAutenticado) {
+				if(dniNuevo.equals(u.getDni())) {
+					dto.put("existe", usuAutenticado);
+				}else {
+					dto.put("Noexiste", "fail");
+				}
+			}
+				
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
 
 	@PostMapping("/usuario/updateUser")
 	public DTO updateHoraReserva(@RequestBody DatosUpdateUsu datos) {
