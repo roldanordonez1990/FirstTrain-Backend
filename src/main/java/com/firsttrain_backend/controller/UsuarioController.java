@@ -1,5 +1,8 @@
 package com.firsttrain_backend.controller;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -7,6 +10,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +26,10 @@ import com.firsttrain_backend.model.entities.Reserva;
 import com.firsttrain_backend.model.entities.Usuario;
 import com.firsttrain_backend.model.repositories.NivelRepository;
 import com.firsttrain_backend.model.repositories.UsuarioRepository;
+import com.firsttrain_backend.model.services.MailService;
 
 @CrossOrigin
+@Controller
 @RestController
 public class UsuarioController {
 
@@ -29,6 +37,8 @@ public class UsuarioController {
 	UsuarioRepository usuRep;
 	@Autowired
 	NivelRepository nivelRep;
+	@Autowired
+	private MailService mailService;
 
 	// Buscar todos los usuarios
 	@GetMapping("usuario/all")
@@ -164,13 +174,13 @@ public class UsuarioController {
 		// ha funcionado
 		return dto;
 	}
-	
+
 	/**
 	 * 
 	 * @param datosNuevo
 	 * @return
 	 */
-	
+
 	@GetMapping("/usuario/autenticadoImagen2")
 	public DTO getUsuarioAutenticado2(HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
@@ -199,6 +209,21 @@ public class UsuarioController {
 		return dto;
 	}
 
+	@Autowired
+	private JavaMailSender javaMailSender;
+
+	public void sendMail(String from, String to, String subject, String body) {
+
+		SimpleMailMessage mail = new SimpleMailMessage();
+
+		mail.setFrom(from);
+		mail.setTo(to);
+		mail.setSubject(subject);
+		mail.setText(body);
+
+		javaMailSender.send(mail);
+	}
+
 	@PostMapping("/usuario/nuevoRegistro")
 	public DTO nuevoUsuarioRegistrado(@RequestBody DatosUsuarioNuevoRegistro datosNuevo) {
 
@@ -208,6 +233,7 @@ public class UsuarioController {
 		try {
 			Usuario u = new Usuario();
 
+			String pass = getMD5(datosNuevo.password);
 			u.setRol(2);
 			u.setNombre(datosNuevo.nombre);
 			u.setApellidos(datosNuevo.apellidos);
@@ -217,42 +243,70 @@ public class UsuarioController {
 			u.setDni(datosNuevo.dni);
 			u.setInfoAdicional(datosNuevo.info);
 			u.setNivelEntrenamiento(nivelRep.findById(datosNuevo.nivel).get());
-			u.setPassword(datosNuevo.password);
+			u.setPassword(pass);
 			u.setFoto(null);
 			u.setEmail(datosNuevo.email);
 			this.usuRep.save(u);
+			String message = "\n¡Enhorabuena! Ahora formas parde de First Train Center" + "\nTus datos de acceso a la aplicación son los siguientes: " 
+			+ "\nClave de acceso: " + datosNuevo.dni + "\nPassword: " + datosNuevo.password;
+			mailService.sendMail("roldanordonez.francisco@gmail.com", datosNuevo.email, "Credenciales First-Train", message);
+			System.out.println(message);
 			dto.put("result", "ok");
+
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 		return dto;
 
 	}
+	
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 */
+	//Método para codificar en MD5
+	public static String getMD5(String input) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] messageDigest = md.digest(input.getBytes());
+			BigInteger number = new BigInteger(1, messageDigest);
+			String hashtext = number.toString(16);
+
+			while (hashtext.length() < 32) {
+				hashtext = "0" + hashtext;
+			}
+			return hashtext;
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * 
 	 * @param datos
 	 * @return
 	 */
-	
+
 	@PostMapping("usuario/comprobacion")
 	public DTO comprobarReserva(@RequestBody DatosUsuarioNuevoRegistro datosNuevo) {
 		DTO dto = new DTO(); // Voy a devolver un dto
 		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
 
 		try {
-			//int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
+			// int idUsuAutenticado =
+			// AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
 			// Obtengo el usuario autenticado, por su JWT
 			List<Usuario> usuAutenticado = this.usuRep.getDniUser();
 			String dniNuevo = datosNuevo.dni;
-			for(Usuario u: usuAutenticado) {
-				if(dniNuevo.equals(u.getDni())) {
+			for (Usuario u : usuAutenticado) {
+				if (dniNuevo.equals(u.getDni())) {
 					dto.put("existe", usuAutenticado);
-				}else {
+				} else {
 					dto.put("Noexiste", "fail");
 				}
 			}
-				
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -309,51 +363,54 @@ public class UsuarioController {
 		}
 		return dto;
 	}
-	
+
 	/**
 	 * 
 	 */
-	
+
 	@PostMapping("/usuario/ratificaPassword")
-	public DTO ratificaPassword (@RequestBody DTO dtoRecibido, HttpServletRequest request) {
+	public DTO ratificaPassword(@RequestBody DTO dtoRecibido, HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
 		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
 
-		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario autenticado, por su JWT
+		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario
+																									// autenticado, por
+																									// su JWT
 
 		try {
-			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo todos los datos del usuario
-			String password = (String) dtoRecibido.get("password");  // Compruebo la contraseña
+			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo todos los datos del
+																					// usuario
+			String password = (String) dtoRecibido.get("password"); // Compruebo la contraseña
 			if (password.equals(usuarioAutenticado.getPassword())) {
 				dto.put("result", "ok"); // Devuelvo éxito, las contraseñas son iguales
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
 		return dto;
 	}
-	
+
 	/**
 	 * 
 	 */
-	
+
 	@PostMapping("/usuario/modificaPassword")
-	public DTO modificaPassword (@RequestBody DTO dtoRecibido, HttpServletRequest request) {
+	public DTO modificaPassword(@RequestBody DTO dtoRecibido, HttpServletRequest request) {
 		DTO dto = new DTO(); // Voy a devolver un dto
 		dto.put("result", "fail"); // Asumo que voy a fallar, si todo va bien se sobrescribe este valor
 
-		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario autenticado, por su JWT
+		int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request); // Obtengo el usuario
+																									// autenticado, por
+																									// su JWT
 
 		try {
 			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo al usuario
-			String password = (String) dtoRecibido.get("password");  // Recibo la password que llega en el dtoRecibido
+			String password = (String) dtoRecibido.get("password"); // Recibo la password que llega en el dtoRecibido
 			usuarioAutenticado.setPassword(password); // Modifico la password
-			usuRep.save(usuarioAutenticado);  // Guardo el usuario, con nueva password, en la unidad de persistencia
+			usuRep.save(usuarioAutenticado); // Guardo el usuario, con nueva password, en la unidad de persistencia
 			dto.put("result", "ok"); // Devuelvo éxito
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
