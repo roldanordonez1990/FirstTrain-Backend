@@ -406,9 +406,17 @@ public class UsuarioController {
 
 		try {
 			Usuario usuarioAutenticado = usuRep.findById(idUsuAutenticado).get(); // Localizo al usuario
+			String dniUsuario;
+			String emailUsuario;
+			emailUsuario = usuarioAutenticado.getEmail();
+			dniUsuario = usuarioAutenticado.getDni();
 			String password = (String) dtoRecibido.get("password"); // Recibo la password que llega en el dtoRecibido
-			usuarioAutenticado.setPassword(password); // Modifico la password
+			String passwordMD5 = getMD5(password);
+			usuarioAutenticado.setPassword(passwordMD5); // Modifico la password
 			usuRep.save(usuarioAutenticado); // Guardo el usuario, con nueva password, en la unidad de persistencia
+			String message = "\n¡Enhorabuena! Tu contraseña ha sido modificada correctamente" + "\nAhora tus datos de acceso a la aplicación son los siguientes: " 
+					+ "\nClave de acceso: " + dniUsuario + "\nPassword: " + password;
+			mailService.sendMail("roldanordonez.francisco@gmail.com", emailUsuario, "Credenciales First-Train Nueva Password", message);
 			dto.put("result", "ok"); // Devuelvo éxito
 		} catch (Exception ex) {
 			ex.printStackTrace();
