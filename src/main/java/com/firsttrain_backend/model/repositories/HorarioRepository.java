@@ -15,6 +15,7 @@ public interface HorarioRepository extends CrudRepository<Horario, Integer>{
 	@Query(value="SELECT horas FROM horario", nativeQuery = true)
 	public List<Horario>getHorasDelHorario();
 	
+	
 	@Query(value="SELECT * FROM horario WHERE disponible = 1", nativeQuery = true)
 	public List<Horario>getHorasDelHorarioDisponibles();
 

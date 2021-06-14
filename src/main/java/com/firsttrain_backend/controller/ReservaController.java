@@ -23,6 +23,7 @@ import com.firsttrain_backend.model.entities.Usuario;
 import com.firsttrain_backend.model.repositories.HorarioRepository;
 import com.firsttrain_backend.model.repositories.ReservaRepository;
 import com.firsttrain_backend.model.repositories.UsuarioRepository;
+import com.firsttrain_backend.model.services.MailService;
 
 
 @CrossOrigin
@@ -35,7 +36,8 @@ public class ReservaController {
 	HorarioRepository horaRep;
 	@Autowired
 	UsuarioRepository usuRep;
-
+	@Autowired
+	private MailService mailService;
 
 	@GetMapping("todasLasHorasYDatosReserva/all")
 	public DTO todosLasHoras(HttpServletRequest request) {
@@ -145,6 +147,11 @@ public class ReservaController {
 			int idUsuAutenticado = AutenticadorJWT.getIdUsuarioDesdeJwtIncrustadoEnRequest(request);
 			// Obtengo el usuario autenticado, por su JWT
 			Usuario usuAutenticado = this.usuRep.findById(idUsuAutenticado).get();
+			Horario h = this.horaRep.findById(id_hora).get();
+			String horas;
+			horas = h.getHoras();
+			String emailUsuario;
+			emailUsuario = usuAutenticado.getEmail();
 			Reserva re = reservaRep.getComprobarReserva(id_hora, idUsuAutenticado);
 			if (re != null) {
 				System.out.println("NOOOOOOOOOOOO");
@@ -157,6 +164,11 @@ public class ReservaController {
 				r.setFecha(new Date());
 
 				this.reservaRep.save(r);
+				
+				String message = "\n¡Enhorabuena! Has reservado con First Train Center" + "\nEl horario de asistencia al centro: " 
+						+ "\nHora: " + horas + "\nMuchas gracias";
+						mailService.sendMail("roldanordonez.francisco@gmail.com", emailUsuario, "Tu Reserva en First-Train", message);
+						System.out.println(message);
 
 				dto.put("result", "ok");
 			}
